@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Көмірсулар тесті</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --paper:#EEF1EA;
+    --card:#F9F8F2;
+    --ink:#17231B;
+    --ink-soft:#51604F;
+    --amber:#B87423;
+    --teal:#2B6E63;
+    --rust:#AA3E2A;
+    --line:#D3CFBC;
+    --shadow:rgba(23,35,27,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#11170E;
+      --card:#171F15;
+      --ink:#E9ECE2;
+      --ink-soft:#A7B29E;
+      --amber:#E5A855;
+      --teal:#5CB2A1;
+      --rust:#E2775F;
+      --line:#2B3327;
+      --shadow:rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11170E; --card:#171F15; --ink:#E9ECE2; --ink-soft:#A7B29E;
+    --amber:#E5A855; --teal:#5CB2A1; --rust:#E2775F; --line:#2B3327; --shadow:rgba(0,0,0,.45);
+  }
+  :root[data-theme="light"]{
+    --paper:#EEF1EA; --card:#F9F8F2; --ink:#17231B; --ink-soft:#51604F;
+    --amber:#B87423; --teal:#2B6E63; --rust:#AA3E2A; --line:#D3CFBC; --shadow:rgba(23,35,27,.08);
+  }
+
+  *{box-sizing:border-box;}
+  html{font-size:17px;}
+  body{margin:0;}
+
+  .page{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    min-height:100%;
+    line-height:1.5;
+  }
+
+  h1,h2{
+    font-family:Georgia,"Iowan Old Style","Palatino Linotype","Times New Roman",serif;
+    text-wrap:balance;
+    margin:0;
+  }
+
+  .backlink{max-width:760px; margin:0 auto; padding:12px 20px 0;}
+  .backlink a{font-size:.85rem; color:var(--ink-soft); text-decoration:none;}
+  .backlink a:hover{color:var(--ink);}
+
+  .topbar{
+    position:sticky; top:0; z-index:10;
+    background:color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{
+    max-width:760px; margin:0 auto;
+    padding:.85rem 1.25rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:.7rem;}
+  .brand-hex{
+    width:26px; height:30px; flex:none;
+    clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+    background:linear-gradient(160deg,var(--amber),var(--teal));
+  }
+  .eyebrow{
+    margin:0 0 .15rem;
+    font-size:.68rem; text-transform:uppercase; letter-spacing:.09em;
+    color:var(--ink-soft); font-weight:600;
+  }
+  .topbar h1{font-size:1.28rem; font-weight:700;}
+
+  .scoreboard{display:flex; align-items:center; gap:.75rem;}
+  .score-main{
+    font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,"Roboto Mono",monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:1.15rem; font-weight:600;
+  }
+  .score-main .score-total{color:var(--ink-soft); font-size:.9rem;}
+  .hexrow{display:flex; gap:3px;}
+  .hex{
+    width:12px; height:14px;
+    clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+    background:var(--line);
+    transition:background .25s ease;
+  }
+  .hex.correct{background:var(--teal);}
+  .hex.wrong{background:var(--rust);}
+  .hex.pending{background:var(--amber);}
+
+  .content{max-width:760px; margin:0 auto; padding:1.5rem 1.25rem 4rem;}
+  .intro{color:var(--ink-soft); font-size:.98rem; max-width:60ch;}
+  .legend{display:flex; gap:1.25rem; margin:.25rem 0 1.5rem; font-size:.85rem; color:var(--ink-soft);}
+  .legend-item{display:inline-flex; align-items:center; gap:.4rem;}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .dot.teal{background:var(--teal);}
+  .dot.rust{background:var(--rust);}
+
+  .qlist{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1rem;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-left:3px solid var(--line);
+    border-radius:8px;
+    padding:1.15rem 1.25rem 1.3rem;
+    box-shadow:0 1px 2px var(--shadow);
+    transition:border-left-color .25s ease;
+  }
+  .card.is-correct{border-left-color:var(--teal);}
+  .card.is-wrong{border-left-color:var(--rust);}
+  .card.is-pending{border-left-color:var(--amber);}
+
+  .card-head{display:flex; align-items:baseline; gap:.7rem; margin-bottom:.85rem;}
+  .qnum{
+    font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,"Roboto Mono",monospace;
+    font-size:.78rem; color:var(--ink-soft); flex:none; padding-top:.3rem;
+  }
+  .substance h2{font-size:1.35rem; font-weight:700;}
+  .formula{
+    font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,"Roboto Mono",monospace;
+    font-size:.82rem; color:var(--ink-soft);
+  }
+
+  .chips{display:flex; flex-wrap:wrap; gap:.5rem;}
+  .chip{
+    font:inherit; font-size:.9rem; font-weight:600;
+    background:transparent; color:var(--ink);
+    border:1px solid var(--line); border-radius:6px;
+    padding:.5rem .8rem;
+    display:inline-flex; align-items:center; gap:.5rem;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .chip:hover{border-color:var(--ink-soft);}
+  .chip:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  .chip .bullet{
+    width:9px; height:10px;
+    clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+    background:var(--line); flex:none;
+  }
+  .chip[aria-pressed="true"]{background:color-mix(in srgb, var(--ink) 6%, transparent); border-color:var(--ink-soft);}
+  .chip.correct-pick{border-color:var(--teal); color:var(--teal);}
+  .chip.correct-pick .bullet{background:var(--teal);}
+  .chip.wrong-pick{border-color:var(--rust); color:var(--rust);}
+  .chip.wrong-pick .bullet{background:var(--rust);}
+  .chip.reveal-correct{border-color:var(--teal); border-style:dashed;}
+
+  .feedback{margin-top:.7rem; font-size:.92rem; font-weight:600;}
+  .feedback.correct{color:var(--teal);}
+  .feedback.wrong{color:var(--rust);}
+
+  .compose{
+    margin-top:.9rem; padding-top:.9rem; border-top:1px dashed var(--line);
+  }
+  .compose-label{margin:0 0 .5rem; font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:600;}
+  .compose-slots{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+  .slot{
+    font:inherit; font-size:.92rem; color:var(--ink);
+    background:var(--paper); border:1px solid var(--line); border-radius:6px;
+    padding:.45rem .6rem; min-width:9.5rem;
+  }
+  .slot:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  .plus{color:var(--ink-soft); font-weight:700;}
+  .compose-feedback{margin-top:.6rem; font-size:.9rem; font-weight:600;}
+  .compose-feedback.correct{color:var(--teal);}
+  .compose-feedback.wrong{color:var(--rust);}
+
+  .summary{
+    margin-top:2rem; padding:1.1rem 1.25rem; border-radius:8px;
+    background:var(--card); border:1px solid var(--line);
+    font-size:1rem; text-align:center; font-weight:600;
+  }
+  .restart{
+    display:block; margin:1.5rem auto 0;
+    font:inherit; font-size:.85rem; font-weight:600;
+    background:transparent; color:var(--ink-soft);
+    border:1px solid var(--line); border-radius:6px;
+    padding:.5rem 1rem; cursor:pointer;
+  }
+  .restart:hover{color:var(--ink); border-color:var(--ink-soft);}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="backlink"><a href="index.html">← Барлық пәндер</a></div>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-hex" aria-hidden="true"></span>
+        <div>
+          <p class="eyebrow">Химия · Мектеп курсы</p>
+          <h1>Көмірсулар тесті</h1>
+        </div>
+      </div>
+      <div class="scoreboard">
+        <div class="score-main"><span id="scoreVal">0</span><span class="score-total">/11</span></div>
+        <div class="hexrow" id="hexrow"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <p class="intro">Әр зат үшін тобын анықтаңыз: моносахарид, дисахарид немесе полисахарид. Дисахарид деп тапсаңыз, ол қандай екі моносахаридтен тұратынын да көрсетіңіз.</p>
+    <div class="legend">
+      <span class="legend-item"><i class="dot teal" aria-hidden="true"></i>Дұрыс жауап</span>
+      <span class="legend-item"><i class="dot rust" aria-hidden="true"></i>Қате жауап</span>
+    </div>
+
+    <ol class="qlist" id="qlist"></ol>
+
+    <div class="summary" id="summary" hidden></div>
+    <button class="restart" id="restartBtn" type="button">Қайта бастау</button>
+  </main>
+</div>
+
+<script>
+var tg = window.Telegram && window.Telegram.WebApp;
+if(tg){
+  tg.ready();
+  tg.expand();
+  var applyTgTheme = function(){
+    document.documentElement.setAttribute('data-theme', tg.colorScheme === 'dark' ? 'dark' : 'light');
+  };
+  applyTgTheme();
+  tg.onEvent('themeChanged', applyTgTheme);
+  try{ tg.setHeaderColor('bg_color'); }catch(e){}
+  try{ tg.setBackgroundColor('bg_color'); }catch(e){}
+  if(tg.BackButton){
+    tg.BackButton.show();
+    tg.BackButton.onClick(function(){ window.location.href = 'index.html'; });
+  }
+}
+</script>
+
+<script>
+(function(){
+  var GROUP_LABEL = {mono:"Моносахарид", di:"Дисахарид", poly:"Полисахарид"};
+  var MONO_OPTIONS = ["Глюкоза","Фруктоза","Галактоза"];
+
+  var ITEMS = [
+    {name:"Глюкоза",       formula:"C₆H₁₂O₆",    group:"mono"},
+    {name:"Сахароза",      formula:"C₁₂H₂₂O₁₁",  group:"di", parts:["Глюкоза","Фруктоза"]},
+    {name:"Крахмал",       formula:"(C₆H₁₀O₅)ₙ", group:"poly"},
+    {name:"Фруктоза",      formula:"C₆H₁₂O₆",    group:"mono"},
+    {name:"Лактоза",       formula:"C₁₂H₂₂O₁₁",  group:"di", parts:["Глюкоза","Галактоза"]},
+    {name:"Гликоген",      formula:"(C₆H₁₀O₅)ₙ", group:"poly"},
+    {name:"Мальтоза",      formula:"C₁₂H₂₂O₁₁",  group:"di", parts:["Глюкоза","Глюкоза"]},
+    {name:"Галактоза",     formula:"C₆H₁₂O₆",    group:"mono"},
+    {name:"Целлюлоза",     formula:"(C₆H₁₀O₅)ₙ", group:"poly"},
+    {name:"Рибоза",        formula:"C₅H₁₀O₅",    group:"mono"},
+    {name:"Дезоксирибоза", formula:"C₅H₁₀O₄",    group:"mono"}
+  ];
+
+  var state = ITEMS.map(function(){ return {chosen:null, slot0:"", slot1:"", hapticDone:false}; });
+
+  var qlist = document.getElementById("qlist");
+  var hexrow = document.getElementById("hexrow");
+  var scoreVal = document.getElementById("scoreVal");
+  var summary = document.getElementById("summary");
+
+  ITEMS.forEach(function(item, idx){
+    var hex = document.createElement("span");
+    hex.className = "hex";
+    hex.id = "hex-" + idx;
+    hexrow.appendChild(hex);
+
+    var li = document.createElement("li");
+    li.className = "card";
+    li.id = "card-" + idx;
+
+    var chipsHtml = ["mono","di","poly"].map(function(g){
+      return '<button type="button" class="chip" data-idx="'+idx+'" data-group="'+g+'" aria-pressed="false">' +
+             '<span class="bullet" aria-hidden="true"></span>' + GROUP_LABEL[g] + '</button>';
+    }).join("");
+
+    var composeHtml = "";
+    if (item.group === "di") {
+      var optHtml = '<option value="">Таңдаңыз</option>' + MONO_OPTIONS.map(function(o){
+        return '<option value="'+o+'">'+o+'</option>';
+      }).join("");
+      composeHtml =
+        '<div class="compose" id="compose-'+idx+'" hidden>' +
+          '<p class="compose-label">Құрамы</p>' +
+          '<div class="compose-slots">' +
+            '<select class="slot" data-idx="'+idx+'" data-slot="0" aria-label="Бірінші моносахарид">'+optHtml+'</select>' +
+            '<span class="plus" aria-hidden="true">+</span>' +
+            '<select class="slot" data-idx="'+idx+'" data-slot="1" aria-label="Екінші моносахарид">'+optHtml+'</select>' +
+          '</div>' +
+          '<div class="compose-feedback" id="compose-fb-'+idx+'" hidden></div>' +
+        '</div>';
+    }
+
+    li.innerHTML =
+      '<div class="card-head">' +
+        '<span class="qnum">№'+(idx+1)+'</span>' +
+        '<div class="substance"><h2>'+item.name+'</h2><span class="formula">'+item.formula+'</span></div>' +
+      '</div>' +
+      '<div class="chips" role="group" aria-label="'+item.name+' — топты таңдаңыз">'+chipsHtml+'</div>' +
+      '<div class="feedback" id="fb-'+idx+'" hidden></div>' +
+      composeHtml;
+
+    qlist.appendChild(li);
+  });
+
+  qlist.addEventListener("click", function(e){
+    var btn = e.target.closest(".chip");
+    if (!btn) return;
+    var idx = Number(btn.dataset.idx);
+    var group = btn.dataset.group;
+    if (tg) tg.HapticFeedback.selectionChanged();
+    state[idx].chosen = group;
+    state[idx].slot0 = "";
+    state[idx].slot1 = "";
+    state[idx].hapticDone = false;
+    render(idx);
+  });
+
+  qlist.addEventListener("change", function(e){
+    var sel = e.target.closest(".slot");
+    if (!sel) return;
+    var idx = Number(sel.dataset.idx);
+    var slot = sel.dataset.slot;
+    if (tg) tg.HapticFeedback.selectionChanged();
+    if (slot === "0") state[idx].slot0 = sel.value;
+    else state[idx].slot1 = sel.value;
+    render(idx);
+  });
+
+  function itemStatus(idx){
+    var item = ITEMS[idx];
+    var s = state[idx];
+    if (s.chosen === null) return "unanswered";
+    var groupCorrect = s.chosen === item.group;
+    if (item.group !== "di" || !groupCorrect) {
+      return groupCorrect ? "correct" : "wrong";
+    }
+    if (!s.slot0 || !s.slot1) return "pending";
+    var picked = [s.slot0, s.slot1].slice().sort();
+    var expected = item.parts.slice().sort();
+    var composeCorrect = picked[0] === expected[0] && picked[1] === expected[1];
+    return composeCorrect ? "correct" : "wrong";
+  }
+
+  function render(idx){
+    var item = ITEMS[idx];
+    var s = state[idx];
+    var card = document.getElementById("card-"+idx);
+    var fb = document.getElementById("fb-"+idx);
+    var chips = card.querySelectorAll(".chip");
+
+    chips.forEach(function(chip){
+      var g = chip.dataset.group;
+      chip.setAttribute("aria-pressed", g === s.chosen ? "true" : "false");
+      chip.classList.remove("correct-pick","wrong-pick","reveal-correct");
+      if (s.chosen !== null) {
+        if (g === s.chosen) {
+          chip.classList.add(g === item.group ? "correct-pick" : "wrong-pick");
+        } else if (g === item.group) {
+          chip.classList.add("reveal-correct");
+        }
+      }
+    });
+
+    var status = itemStatus(idx);
+    card.classList.remove("is-correct","is-wrong","is-pending");
+    var hex = document.getElementById("hex-"+idx);
+    hex.classList.remove("correct","wrong","pending");
+
+    if (s.chosen === null) {
+      fb.hidden = true;
+    } else {
+      fb.hidden = false;
+      var groupCorrect = s.chosen === item.group;
+      if (groupCorrect) {
+        fb.className = "feedback correct";
+        fb.textContent = item.group === "di"
+          ? "✓ Дұрыс — бұл дисахарид. Енді құрамын көрсетіңіз."
+          : "✓ Дұрыс — бұл " + GROUP_LABEL[item.group].toLowerCase() + ".";
+      } else {
+        fb.className = "feedback wrong";
+        fb.textContent = "✕ Қате. Дұрыс жауап: " + GROUP_LABEL[item.group] + ".";
+      }
+    }
+
+    if (item.group === "di") {
+      var compose = document.getElementById("compose-"+idx);
+      var composeFb = document.getElementById("compose-fb-"+idx);
+      var showCompose = s.chosen === "di";
+      compose.hidden = !showCompose;
+      if (showCompose && s.slot0 && s.slot1) {
+        var picked = [s.slot0, s.slot1].slice().sort();
+        var expected = item.parts.slice().sort();
+        var ok = picked[0] === expected[0] && picked[1] === expected[1];
+        composeFb.hidden = false;
+        composeFb.className = "compose-feedback " + (ok ? "correct" : "wrong");
+        composeFb.textContent = ok
+          ? "✓ Дұрыс: " + item.name + " = " + item.parts.join(" + ")
+          : "✕ Қате. Дұрысы: " + item.parts.join(" + ");
+      } else {
+        composeFb.hidden = true;
+      }
+    }
+
+    if (status === "correct") { card.classList.add("is-correct"); hex.classList.add("correct"); }
+    else if (status === "wrong") { card.classList.add("is-wrong"); hex.classList.add("wrong"); }
+    else if (status === "pending") { card.classList.add("is-pending"); hex.classList.add("pending"); }
+
+    if (tg && !s.hapticDone && (status === "correct" || status === "wrong")) {
+      s.hapticDone = true;
+      tg.HapticFeedback.notificationOccurred(status === "correct" ? "success" : "error");
+    }
+
+    updateScore();
+  }
+
+  function updateScore(){
+    var correct = 0, answered = 0;
+    for (var i=0;i<ITEMS.length;i++){
+      var st = itemStatus(i);
+      if (st !== "unanswered") answered++;
+      if (st === "correct") correct++;
+    }
+    scoreVal.textContent = correct;
+
+    if (answered === ITEMS.length) {
+      var pct = correct / ITEMS.length;
+      var msg;
+      if (pct === 1) msg = "Тамаша! Барлық " + ITEMS.length + " жауап дұрыс — тақырыпты толық меңгергенсіз.";
+      else if (pct >= 0.7) msg = "Жақсы нәтиже: " + correct + "/" + ITEMS.length + ". Қалған қателерді қайта қараңыз.";
+      else msg = "Нәтиже: " + correct + "/" + ITEMS.length + ". Жоғарыдағы жіктелуге қайта оралып, қайталап көріңіз.";
+      summary.hidden = false;
+      summary.textContent = msg;
+      if (tg) tg.HapticFeedback.notificationOccurred('success');
+    } else {
+      summary.hidden = true;
+    }
+  }
+
+  document.getElementById("restartBtn").addEventListener("click", function(){
+    window.location.reload();
+  });
+})();
+</script>
+</body>
+</html>

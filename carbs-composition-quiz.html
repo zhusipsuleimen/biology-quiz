@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Құрамын анықта: ди- және полисахаридтер</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --paper:#EEF1EA;
+    --card:#F9F8F2;
+    --ink:#17231B;
+    --ink-soft:#51604F;
+    --amber:#B87423;
+    --teal:#2B6E63;
+    --rust:#AA3E2A;
+    --line:#D3CFBC;
+    --shadow:rgba(23,35,27,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#11170E;
+      --card:#171F15;
+      --ink:#E9ECE2;
+      --ink-soft:#A7B29E;
+      --amber:#E5A855;
+      --teal:#5CB2A1;
+      --rust:#E2775F;
+      --line:#2B3327;
+      --shadow:rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11170E; --card:#171F15; --ink:#E9ECE2; --ink-soft:#A7B29E;
+    --amber:#E5A855; --teal:#5CB2A1; --rust:#E2775F; --line:#2B3327; --shadow:rgba(0,0,0,.45);
+  }
+  :root[data-theme="light"]{
+    --paper:#EEF1EA; --card:#F9F8F2; --ink:#17231B; --ink-soft:#51604F;
+    --amber:#B87423; --teal:#2B6E63; --rust:#AA3E2A; --line:#D3CFBC; --shadow:rgba(23,35,27,.08);
+  }
+
+  *{box-sizing:border-box;}
+  html{font-size:17px;}
+  body{margin:0;}
+
+  .page{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    min-height:100%;
+    line-height:1.5;
+  }
+
+  h1,h2{
+    font-family:Georgia,"Iowan Old Style","Palatino Linotype","Times New Roman",serif;
+    text-wrap:balance;
+    margin:0;
+  }
+
+  .backlink{max-width:760px; margin:0 auto; padding:12px 20px 0;}
+  .backlink a{font-size:.85rem; color:var(--ink-soft); text-decoration:none;}
+  .backlink a:hover{color:var(--ink);}
+
+  .topbar{
+    position:sticky; top:0; z-index:10;
+    background:color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{
+    max-width:760px; margin:0 auto;
+    padding:.85rem 1.25rem;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:.7rem;}
+  .brand-hex{
+    width:26px; height:30px; flex:none;
+    clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+    background:linear-gradient(160deg,var(--amber),var(--teal));
+  }
+  .eyebrow{
+    margin:0 0 .15rem;
+    font-size:.68rem; text-transform:uppercase; letter-spacing:.09em;
+    color:var(--ink-soft); font-weight:600;
+  }
+  .topbar h1{font-size:1.2rem; font-weight:700;}
+
+  .scoreboard{display:flex; align-items:center; gap:.75rem;}
+  .score-main{
+    font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,"Roboto Mono",monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:1.15rem; font-weight:600;
+  }
+  .score-main .score-total{color:var(--ink-soft); font-size:.9rem;}
+  .hexrow{display:flex; gap:3px;}
+  .hex{
+    width:12px; height:14px;
+    clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+    background:var(--line);
+    transition:background .25s ease;
+  }
+  .hex.correct{background:var(--teal);}
+  .hex.wrong{background:var(--rust);}
+
+  .content{max-width:760px; margin:0 auto; padding:1.5rem 1.25rem 4rem;}
+  .intro{color:var(--ink-soft); font-size:.98rem; max-width:62ch;}
+  .legend{display:flex; gap:1.25rem; margin:.25rem 0 1.5rem; font-size:.85rem; color:var(--ink-soft);}
+  .legend-item{display:inline-flex; align-items:center; gap:.4rem;}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .dot.teal{background:var(--teal);}
+  .dot.rust{background:var(--rust);}
+
+  .section-heading{
+    margin:2rem 0 .9rem; display:flex; align-items:center; gap:.6rem;
+    font-size:.75rem; text-transform:uppercase; letter-spacing:.09em;
+    color:var(--ink-soft); font-weight:700;
+  }
+  .section-heading::after{content:""; flex:1; height:1px; background:var(--line);}
+  .section-heading:first-of-type{margin-top:0;}
+
+  .qlist{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1rem;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-left:3px solid var(--line);
+    border-radius:8px;
+    padding:1.15rem 1.25rem 1.3rem;
+    box-shadow:0 1px 2px var(--shadow);
+    transition:border-left-color .25s ease;
+  }
+  .card.is-correct{border-left-color:var(--teal);}
+  .card.is-wrong{border-left-color:var(--rust);}
+
+  .card-head{display:flex; align-items:baseline; gap:.7rem; margin-bottom:.85rem; flex-wrap:wrap;}
+  .qnum{
+    font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,"Roboto Mono",monospace;
+    font-size:.78rem; color:var(--ink-soft); flex:none; padding-top:.3rem;
+  }
+  .substance{display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap;}
+  .substance h2{font-size:1.35rem; font-weight:700;}
+  .formula{
+    font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,"Roboto Mono",monospace;
+    font-size:.82rem; color:var(--ink-soft);
+  }
+  .tag{
+    margin-left:auto;
+    font-size:.66rem; text-transform:uppercase; letter-spacing:.07em; font-weight:700;
+    color:var(--ink-soft); border:1px solid var(--line); border-radius:999px;
+    padding:.22rem .6rem .18rem;
+    white-space:nowrap;
+  }
+
+  .compose-label{margin:0 0 .55rem; font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:600;}
+  .compose-slots{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+  .slot{
+    font:inherit; font-size:.92rem; color:var(--ink);
+    background:var(--paper); border:1px solid var(--line); border-radius:6px;
+    padding:.45rem .6rem; min-width:9.5rem;
+  }
+  .slot:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  .plus{color:var(--ink-soft); font-weight:700;}
+  .paren{
+    font-family:Georgia,"Iowan Old Style",serif; font-size:1.6rem; color:var(--ink-soft); line-height:1;
+  }
+  .sub-n{
+    font-family:Georgia,"Iowan Old Style",serif; font-style:italic; color:var(--ink-soft);
+    font-size:1.05rem; align-self:flex-end; margin-left:-.15rem;
+  }
+
+  .feedback{margin-top:.75rem; font-size:.92rem; font-weight:600;}
+  .feedback.correct{color:var(--teal);}
+  .feedback.wrong{color:var(--rust);}
+  .note{margin-top:.5rem; font-size:.87rem; color:var(--ink-soft); max-width:56ch;}
+
+  .summary{
+    margin-top:2rem; padding:1.1rem 1.25rem; border-radius:8px;
+    background:var(--card); border:1px solid var(--line);
+    font-size:1rem; text-align:center; font-weight:600;
+  }
+  .restart{
+    display:block; margin:1.5rem auto 0;
+    font:inherit; font-size:.85rem; font-weight:600;
+    background:transparent; color:var(--ink-soft);
+    border:1px solid var(--line); border-radius:6px;
+    padding:.5rem 1rem; cursor:pointer;
+  }
+  .restart:hover{color:var(--ink); border-color:var(--ink-soft);}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="backlink"><a href="index.html">← Барлық пәндер</a></div>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-hex" aria-hidden="true"></span>
+        <div>
+          <p class="eyebrow">Химия · Мектеп курсы</p>
+          <h1>Құрамын анықта: ди- және полисахаридтер</h1>
+        </div>
+      </div>
+      <div class="scoreboard">
+        <div class="score-main"><span id="scoreVal">0</span><span class="score-total">/6</span></div>
+        <div class="hexrow" id="hexrow"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <p class="intro">Заттың дисахарид немесе полисахарид екені белгілі — сіздің міндетіңіз әрқайсысының <strong>қандай моносахаридтерден құралғанын</strong> көрсету.</p>
+    <div class="legend">
+      <span class="legend-item"><i class="dot teal" aria-hidden="true"></i>Дұрыс жауап</span>
+      <span class="legend-item"><i class="dot rust" aria-hidden="true"></i>Қате жауап</span>
+    </div>
+
+    <p class="section-heading">Дисахаридтер</p>
+    <ol class="qlist" id="qlist-di" start="1"></ol>
+
+    <p class="section-heading">Полисахаридтер</p>
+    <ol class="qlist" id="qlist-poly"></ol>
+
+    <div class="summary" id="summary" hidden></div>
+    <button class="restart" id="restartBtn" type="button">Қайта бастау</button>
+  </main>
+</div>
+
+<script>
+var tg = window.Telegram && window.Telegram.WebApp;
+if(tg){
+  tg.ready();
+  tg.expand();
+  var applyTgTheme = function(){
+    document.documentElement.setAttribute('data-theme', tg.colorScheme === 'dark' ? 'dark' : 'light');
+  };
+  applyTgTheme();
+  tg.onEvent('themeChanged', applyTgTheme);
+  try{ tg.setHeaderColor('bg_color'); }catch(e){}
+  try{ tg.setBackgroundColor('bg_color'); }catch(e){}
+  if(tg.BackButton){
+    tg.BackButton.show();
+    tg.BackButton.onClick(function(){ window.location.href = 'index.html'; });
+  }
+}
+</script>
+
+<script>
+(function(){
+  var MONO_OPTIONS = ["Глюкоза","Фруктоза","Галактоза"];
+
+  var ITEMS = [
+    {name:"Сахароза", formula:"C₁₂H₂₂O₁₁", tag:"Дисахарид", type:"di",
+      parts:["Глюкоза","Фруктоза"]},
+    {name:"Мальтоза", formula:"C₁₂H₂₂O₁₁", tag:"Дисахарид", type:"di",
+      parts:["Глюкоза","Глюкоза"]},
+    {name:"Лактоза", formula:"C₁₂H₂₂O₁₁", tag:"Дисахарид", type:"di",
+      parts:["Глюкоза","Галактоза"]},
+    {name:"Крахмал", formula:"(C₆H₁₀O₅)ₙ", tag:"Полисахарид", type:"poly",
+      part:"Глюкоза",
+      note:"α-глюкоза қалдықтарынан тұрады (амилоза + амилопектин); өсімдіктің қор заты."},
+    {name:"Гликоген", formula:"(C₆H₁₀O₅)ₙ", tag:"Полисахарид", type:"poly",
+      part:"Глюкоза",
+      note:"α-глюкоза қалдықтарынан тұрады, күшті тармақталған — бауыр мен бұлшықеттегі қор заты."},
+    {name:"Целлюлоза", formula:"(C₆H₁₀O₅)ₙ", tag:"Полисахарид", type:"poly",
+      part:"Глюкоза",
+      note:"β-глюкоза қалдықтарынан тұрады, тармақталмаған тізбек — өсімдік жасушасының қабырғасы."}
+  ];
+
+  var state = ITEMS.map(function(){ return {slot0:"", slot1:"", hapticDone:false}; });
+
+  var hexrow = document.getElementById("hexrow");
+  var scoreVal = document.getElementById("scoreVal");
+  var summary = document.getElementById("summary");
+  var listDi = document.getElementById("qlist-di");
+  var listPoly = document.getElementById("qlist-poly");
+
+  ITEMS.forEach(function(item, idx){
+    var hex = document.createElement("span");
+    hex.className = "hex";
+    hex.id = "hex-" + idx;
+    hexrow.appendChild(hex);
+
+    var li = document.createElement("li");
+    li.className = "card";
+    li.id = "card-" + idx;
+
+    var slotsHtml;
+    if (item.type === "di") {
+      var optHtml = '<option value="">Таңдаңыз</option>' + MONO_OPTIONS.map(function(o){
+        return '<option value="'+o+'">'+o+'</option>';
+      }).join("");
+      slotsHtml =
+        '<div class="compose-slots">' +
+          '<select class="slot" data-idx="'+idx+'" data-slot="0" aria-label="Бірінші моносахарид">'+optHtml+'</select>' +
+          '<span class="plus" aria-hidden="true">+</span>' +
+          '<select class="slot" data-idx="'+idx+'" data-slot="1" aria-label="Екінші моносахарид">'+optHtml+'</select>' +
+        '</div>';
+    } else {
+      var optHtmlPoly = '<option value="">Таңдаңыз</option>' + MONO_OPTIONS.map(function(o){
+        return '<option value="'+o+'">'+o+'</option>';
+      }).join("");
+      slotsHtml =
+        '<div class="compose-slots">' +
+          '<span class="paren" aria-hidden="true">(</span>' +
+          '<select class="slot" data-idx="'+idx+'" data-slot="0" aria-label="Мономер">'+optHtmlPoly+'</select>' +
+          '<span class="paren" aria-hidden="true">)</span>' +
+          '<span class="sub-n" aria-hidden="true">n</span>' +
+        '</div>';
+    }
+
+    li.innerHTML =
+      '<div class="card-head">' +
+        '<span class="qnum">№'+(idx+1)+'</span>' +
+        '<div class="substance"><h2>'+item.name+'</h2><span class="formula">'+item.formula+'</span></div>' +
+        '<span class="tag">'+item.tag+'</span>' +
+      '</div>' +
+      '<p class="compose-label">Құрамы</p>' +
+      slotsHtml +
+      '<div class="feedback" id="fb-'+idx+'" hidden></div>';
+
+    (item.type === "di" ? listDi : listPoly).appendChild(li);
+  });
+
+  document.querySelectorAll(".slot").forEach(function(sel){
+    sel.addEventListener("change", function(){
+      var idx = Number(sel.dataset.idx);
+      var slot = sel.dataset.slot;
+      if (tg) tg.HapticFeedback.selectionChanged();
+      if (slot === "0") state[idx].slot0 = sel.value;
+      else state[idx].slot1 = sel.value;
+      render(idx);
+    });
+  });
+
+  function itemCorrect(idx){
+    var item = ITEMS[idx];
+    var s = state[idx];
+    if (item.type === "di") {
+      if (!s.slot0 || !s.slot1) return null;
+      var picked = [s.slot0, s.slot1].slice().sort();
+      var expected = item.parts.slice().sort();
+      return picked[0] === expected[0] && picked[1] === expected[1];
+    }
+    if (!s.slot0) return null;
+    return s.slot0 === item.part;
+  }
+
+  function render(idx){
+    var item = ITEMS[idx];
+    var s = state[idx];
+    var card = document.getElementById("card-"+idx);
+    var fb = document.getElementById("fb-"+idx);
+    var hex = document.getElementById("hex-"+idx);
+    var status = itemCorrect(idx);
+
+    card.classList.remove("is-correct","is-wrong");
+    hex.classList.remove("correct","wrong");
+
+    if (status === null) {
+      fb.hidden = true;
+    } else {
+      fb.hidden = false;
+      if (status) {
+        card.classList.add("is-correct");
+        hex.classList.add("correct");
+        fb.className = "feedback correct";
+        var composedAs = item.type === "di" ? item.parts.join(" + ") : item.part + " (n)";
+        var noteHtml = item.note ? '<div class="note">' + item.note + '</div>' : "";
+        fb.innerHTML = "✓ Дұрыс: " + item.name + " = " + composedAs + noteHtml;
+      } else {
+        card.classList.add("is-wrong");
+        hex.classList.add("wrong");
+        fb.className = "feedback wrong";
+        var expectedAs = item.type === "di" ? item.parts.join(" + ") : item.part;
+        fb.textContent = "✕ Қате. Дұрысы: " + expectedAs;
+      }
+    }
+
+    if (tg && !s.hapticDone && status !== null) {
+      s.hapticDone = true;
+      tg.HapticFeedback.notificationOccurred(status ? "success" : "error");
+    }
+
+    updateScore();
+  }
+
+  function updateScore(){
+    var correct = 0, answered = 0;
+    for (var i=0;i<ITEMS.length;i++){
+      var st = itemCorrect(i);
+      if (st !== null) answered++;
+      if (st === true) correct++;
+    }
+    scoreVal.textContent = correct;
+
+    if (answered === ITEMS.length) {
+      var pct = correct / ITEMS.length;
+      var msg;
+      if (pct === 1) msg = "Тамаша! Барлық " + ITEMS.length + " жауап дұрыс.";
+      else if (pct >= 0.66) msg = "Жақсы нәтиже: " + correct + "/" + ITEMS.length + ". Қалған қателерді қайта қараңыз.";
+      else msg = "Нәтиже: " + correct + "/" + ITEMS.length + ". Жоғарыдағы құрамдарды қайта қараңыз.";
+      summary.hidden = false;
+      summary.textContent = msg;
+      if (tg) tg.HapticFeedback.notificationOccurred('success');
+    } else {
+      summary.hidden = true;
+    }
+  }
+
+  document.getElementById("restartBtn").addEventListener("click", function(){
+    window.location.reload();
+  });
+})();
+</script>
+</body>
+</html>
