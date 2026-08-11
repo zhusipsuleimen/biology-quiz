@@ -1,20 +1,24 @@
 <!DOCTYPE html>
-<html lang="kk">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Пәндер бойынша тест</title>
+<title>Биология — вопросы для самоподготовки</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{
   --bg:#f5f6fa; --card:#ffffff; --text:#1c1e21; --muted:#6b7280;
   --border:#e3e5e9; --accent:#3b6fe0; --accent-dark:#2952b3;
-  --radius:14px; --shadow:0 2px 10px rgba(20,20,30,0.06);
+  --green:#1f9d55; --green-bg:#e6f7ec; --red:#d0342c; --red-bg:#fdeceb;
+  --amber:#c98a12; --amber-bg:#fdf3dc; --radius:14px;
+  --shadow:0 2px 10px rgba(20,20,30,0.06);
 }
 @media (prefers-color-scheme: dark){
   :root{
     --bg:#15171c; --card:#1e2128; --text:#eceef2; --muted:#9aa1ad;
     --border:#2c303a; --accent:#5b8bff; --accent-dark:#4671e0;
+    --green:#3ecb72; --green-bg:#0f2b1a; --red:#ff6b63; --red-bg:#33191a;
+    --amber:#e0ac3f; --amber-bg:#332a14;
     --shadow:0 2px 14px rgba(0,0,0,0.35);
   }
 }
@@ -28,202 +32,522 @@ body{
 .wrap{max-width:760px; margin:0 auto; padding:20px 16px 60px;}
 h1{font-size:1.4rem; margin:8px 0 4px;}
 .subtitle{color:var(--muted); font-size:0.92rem; margin-bottom:20px;}
-.group-title{
-  font-size:0.78rem; font-weight:700; color:var(--muted); text-transform:uppercase;
-  letter-spacing:0.04em; margin:22px 0 10px;
-}
-.group-title:first-of-type{margin-top:0;}
-.subject{
-  display:flex; align-items:center; gap:14px;
+.card{
   background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
-  box-shadow:var(--shadow); padding:16px 18px; cursor:pointer; text-decoration:none; color:var(--text);
+  box-shadow:var(--shadow); padding:20px;
 }
-.subject + .subject{margin-top:10px;}
-.subject:hover{border-color:var(--accent);}
-.subject .emoji{font-size:1.7rem; flex-shrink:0;}
-.subject .info{flex:1;}
-.subject .name{font-size:1rem; font-weight:700; margin-bottom:2px;}
-.subject .meta{font-size:0.82rem; color:var(--muted);}
-.subject .arrow{font-size:1.2rem; color:var(--muted); flex-shrink:0;}
+.card + .card{margin-top:16px;}
+
+/* ---- setup screen ---- */
+.setup-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;}
+.setup-header .count{font-weight:600; color:var(--accent);}
+.toggle-all{display:flex; gap:8px;}
+.toggle-all button{
+  border:1px solid var(--border); background:transparent; color:var(--text);
+  border-radius:8px; padding:6px 10px; font-size:0.82rem; cursor:pointer;
+}
+.toggle-all button:hover{border-color:var(--accent); color:var(--accent);}
+.section-list{display:flex; flex-direction:column; gap:2px; max-height:420px; overflow-y:auto; margin:10px 0;}
+.section-row{
+  display:flex; align-items:center; gap:10px; padding:9px 8px; border-radius:9px; cursor:pointer;
+}
+.section-row:hover{background:var(--bg);}
+.section-row input{width:17px; height:17px; accent-color:var(--accent); flex-shrink:0;}
+.section-row .stitle{flex:1; font-size:0.92rem;}
+.section-row .scount{color:var(--muted); font-size:0.82rem; flex-shrink:0;}
+.option-row{display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-top:1px solid var(--border); margin-top:10px;}
+.option-row label{font-size:0.92rem;}
+.switch{position:relative; display:inline-block; width:42px; height:24px; flex-shrink:0;}
+.switch input{opacity:0; width:0; height:0;}
+.slider{position:absolute; cursor:pointer; inset:0; background:var(--border); border-radius:24px; transition:0.15s;}
+.slider:before{position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.15s;}
+input:checked + .slider{background:var(--accent);}
+input:checked + .slider:before{transform:translateX(18px);}
+.start-btn{
+  width:100%; margin-top:18px; padding:14px; border:none; border-radius:12px;
+  background:var(--accent); color:white; font-size:1rem; font-weight:600; cursor:pointer;
+}
+.start-btn:disabled{opacity:0.45; cursor:not-allowed;}
+.start-btn:not(:disabled):hover{background:var(--accent-dark);}
+
+/* ---- quiz screen ---- */
+.topbar{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+.progress-outer{flex:1; height:8px; background:var(--border); border-radius:5px; overflow:hidden;}
+.progress-inner{height:100%; background:var(--accent); border-radius:5px; transition:width 0.25s;}
+.progress-text{font-size:0.82rem; color:var(--muted); white-space:nowrap;}
+.score-badge{
+  font-size:0.82rem; font-weight:600; padding:4px 10px; border-radius:20px;
+  background:var(--green-bg); color:var(--green); white-space:nowrap;
+}
+.section-tag{
+  display:inline-block; font-size:0.76rem; color:var(--accent); background:rgba(59,111,224,0.1);
+  padding:3px 9px; border-radius:20px; margin-bottom:10px; font-weight:600;
+}
+.qtext{font-size:1.12rem; font-weight:600; margin:4px 0 16px; line-height:1.4;}
+.hint{font-size:0.82rem; color:var(--muted); margin:-10px 0 14px;}
+.options{display:flex; flex-direction:column; gap:9px;}
+.opt{
+  display:flex; align-items:center; gap:11px; padding:12px 14px; border:1.5px solid var(--border);
+  border-radius:11px; cursor:pointer; font-size:0.96rem; transition:0.12s; background:var(--card);
+}
+.opt:hover:not(.locked){border-color:var(--accent); background:rgba(59,111,224,0.05);}
+.opt .mark{
+  width:22px; height:22px; border-radius:50%; border:2px solid var(--border); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; color:white;
+}
+.opt.multi .mark{border-radius:6px;}
+.opt.correct{border-color:var(--green); background:var(--green-bg);}
+.opt.correct .mark{background:var(--green); border-color:var(--green);}
+.opt.wrong{border-color:var(--red); background:var(--red-bg);}
+.opt.wrong .mark{background:var(--red); border-color:var(--red);}
+.opt.missed{border-color:var(--amber); background:var(--amber-bg);}
+.opt.missed .mark{background:var(--amber); border-color:var(--amber);}
+.opt.selected:not(.correct):not(.wrong){border-color:var(--accent); background:rgba(59,111,224,0.07);}
+.opt.selected:not(.correct):not(.wrong) .mark{background:var(--accent); border-color:var(--accent);}
+.opt.locked{cursor:default;}
+.feedback{
+  margin-top:14px; padding:11px 14px; border-radius:10px; font-size:0.9rem; font-weight:600;
+  display:none;
+}
+.feedback.show{display:block;}
+.feedback.ok{background:var(--green-bg); color:var(--green);}
+.feedback.no{background:var(--red-bg); color:var(--red);}
+.actions{display:flex; justify-content:space-between; align-items:center; margin-top:18px; gap:10px;}
+.btn{
+  padding:11px 20px; border-radius:10px; font-size:0.92rem; font-weight:600; cursor:pointer; border:none;
+}
+.btn-primary{background:var(--accent); color:white;}
+.btn-primary:hover{background:var(--accent-dark);}
+.btn-primary:disabled{opacity:0.4; cursor:not-allowed;}
+.btn-ghost{background:transparent; color:var(--muted); border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text); border-color:var(--text);}
+
+/* ---- results ---- */
+.result-score{text-align:center; padding:10px 0 4px;}
+.result-score .big{font-size:2.6rem; font-weight:800; color:var(--accent);}
+.result-score .pct{font-size:1.1rem; color:var(--muted); margin-top:4px;}
+.sec-breakdown{display:flex; flex-direction:column; gap:6px; margin-top:16px;}
+.sec-breakdown .row{display:flex; align-items:center; gap:10px; font-size:0.86rem;}
+.sec-breakdown .row .name{flex:1; color:var(--text);}
+.sec-breakdown .bar{flex:1.4; height:7px; background:var(--border); border-radius:5px; overflow:hidden;}
+.sec-breakdown .bar-inner{height:100%; background:var(--accent);}
+.sec-breakdown .row .val{width:52px; text-align:right; color:var(--muted);}
+.review-item{border-top:1px solid var(--border); padding:12px 0;}
+.review-item .q{font-weight:600; font-size:0.92rem; margin-bottom:6px;}
+.review-item .a{font-size:0.86rem; margin:2px 0;}
+.review-item .a.your{color:var(--red);}
+.review-item .a.correct{color:var(--green);}
+.result-actions{display:flex; gap:10px; margin-top:18px;}
+.result-actions .btn{flex:1;}
+.hidden{display:none !important;}
+.small-muted{font-size:0.8rem; color:var(--muted);}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>📚 Пәндер бойынша тест</h1>
-  <div class="subtitle">Тексергіңіз келетін пәнді таңдаңыз</div>
+  <h1>🧬 Биология — вопросы для самоподготовки</h1>
+  <div class="subtitle">59 вопросов · тест с мгновенной проверкой</div>
 
-  <div class="group-title">ЕНТ жаттығу — 10 тамыз</div>
-
-  <a class="subject" href="ent0810-history.html">
-    <div class="emoji">🏛️</div>
-    <div class="info">
-      <div class="name">Қазақстан тарихы</div>
-      <div class="meta">20 сұрақ</div>
+  <!-- SETUP SCREEN -->
+  <div id="setup" class="card">
+    <div class="setup-header">
+      <div class="count"><span id="selCount">59</span> вопросов выбрано</div>
+      <div class="toggle-all">
+        <button type="button" id="selectAllBtn">Выбрать всё</button>
+        <button type="button" id="selectNoneBtn">Очистить</button>
+      </div>
     </div>
-    <div class="arrow">→</div>
-  </a>
+    <div class="section-list" id="sectionList"></div>
 
-  <a class="subject" href="ent0810-biology.html">
-    <div class="emoji">🧬</div>
-    <div class="info">
-      <div class="name">Биология</div>
-      <div class="meta">14 сұрақ</div>
+    <div class="option-row">
+      <label for="shuffleToggle">Перемешивать вопросы</label>
+      <label class="switch">
+        <input type="checkbox" id="shuffleToggle" checked>
+        <span class="slider"></span>
+      </label>
     </div>
-    <div class="arrow">→</div>
-  </a>
 
-  <a class="subject" href="ent0810-chemistry.html">
-    <div class="emoji">🧪</div>
-    <div class="info">
-      <div class="name">Химия</div>
-      <div class="meta">15 сұрақ</div>
+    <button class="start-btn" id="startBtn">Начать тест</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quiz" class="hidden">
+    <div class="topbar">
+      <div class="progress-outer"><div class="progress-inner" id="progressInner"></div></div>
+      <div class="progress-text" id="progressText">1 / 59</div>
+      <div class="score-badge" id="scoreBadge">0 / 0</div>
     </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <div class="group-title">Негізгі тесттер</div>
-
-  <a class="subject" href="biology.html">
-    <div class="emoji">🧬</div>
-    <div class="info">
-      <div class="name">Биология</div>
-      <div class="meta">428 сұрақ · 21 тарау</div>
+    <div class="card">
+      <div class="section-tag" id="sectionTag"></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="hint hidden" id="multiHint">Отметьте все правильные варианты и нажмите «Проверить»</div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions">
+        <button class="btn btn-ghost" id="stopBtn">Остановить</button>
+        <button class="btn btn-primary" id="checkBtn">Проверить</button>
+        <button class="btn btn-primary hidden" id="nextBtn">Следующий вопрос →</button>
+      </div>
     </div>
-    <div class="arrow">→</div>
-  </a>
+  </div>
 
-  <a class="subject" href="chemistry.html">
-    <div class="emoji">🧪</div>
-    <div class="info">
-      <div class="name">Химия</div>
-      <div class="meta">368 сұрақ · 20 бөлім</div>
+  <!-- RESULTS SCREEN -->
+  <div id="results" class="hidden">
+    <div class="card result-score">
+      <div class="small-muted">Результат</div>
+      <div class="big" id="resultBig">0 / 0</div>
+      <div class="pct" id="resultPct">0%</div>
+      <div class="sec-breakdown" id="secBreakdown"></div>
     </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <a class="subject" href="history.html">
-    <div class="emoji">🏛️</div>
-    <div class="info">
-      <div class="name">Қазақстан тарихы</div>
-      <div class="meta">297 сұрақ · 7 дәуір · 37 бөлім</div>
+    <div class="card" id="reviewCard">
+      <div style="font-weight:700; margin-bottom:6px;">Неправильные ответы</div>
+      <div id="reviewList"></div>
     </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <div class="group-title">ҰБТ 2026 тест жинақтары</div>
-
-  <a class="subject" href="biology-unt2026.html">
-    <div class="emoji">🧬</div>
-    <div class="info">
-      <div class="name">Биология ҰБТ 2026</div>
-      <div class="meta">40 сұрақ · 12 тақырып</div>
+    <div class="result-actions">
+      <button class="btn btn-ghost" id="restartBtn">Начать заново</button>
     </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <a class="subject" href="history-unt2026.html">
-    <div class="emoji">🏛️</div>
-    <div class="info">
-      <div class="name">Қазақстан тарихы ҰБТ 2026</div>
-      <div class="meta">40 сұрақ</div>
-    </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <a class="subject" href="chemistry-unt2026.html">
-    <div class="emoji">🧪</div>
-    <div class="info">
-      <div class="name">Химия ҰБТ 2026</div>
-      <div class="meta">40 сұрақ · 10 тақырып</div>
-    </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <div class="group-title">Қайталау</div>
-
-  <a class="subject" href="biology-mistakes.html">
-    <div class="emoji">🔁</div>
-    <div class="info">
-      <div class="name">Биология — қате жауаптар</div>
-      <div class="meta">46 сұрақ · 13 тарау</div>
-    </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <a class="subject" href="biology-mistakes-2.html">
-    <div class="emoji">🔁</div>
-    <div class="info">
-      <div class="name">Биология — қате жауаптар 2</div>
-      <div class="meta">40 сұрақ · 13 тарау</div>
-    </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <a class="subject" href="chemistry-mistakes.html">
-    <div class="emoji">🔁</div>
-    <div class="info">
-      <div class="name">Химия — қате жауаптар</div>
-      <div class="meta">31 сұрақ · 10 бөлім</div>
-    </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <a class="subject" href="history-mistakes.html">
-    <div class="emoji">🔁</div>
-    <div class="info">
-      <div class="name">Қазақстан тарихы — қате жауаптар</div>
-      <div class="meta">32 сұрақ · 17 бөлім</div>
-    </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <div class="group-title">Химия · жаттығулар</div>
-
-  <a class="subject" href="carbs-quiz.html">
-    <div class="emoji">🍯</div>
-    <div class="info">
-      <div class="name">Көмірсулар тесті</div>
-      <div class="meta">11 сұрақ · топты және құрамын анықтау</div>
-    </div>
-    <div class="arrow">→</div>
-  </a>
-
-  <a class="subject" href="carbs-composition-quiz.html">
-    <div class="emoji">🧬</div>
-    <div class="info">
-      <div class="name">Ди- және полисахаридтер құрамы</div>
-      <div class="meta">6 сұрақ</div>
-    </div>
-    <div class="arrow">→</div>
-  </a>
+  </div>
 </div>
+
+<script id="quiz-data" type="application/json">[{"id": "bq1", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Какой из перечисленных ниже процессов характерен только для животных?", "type": "single", "options": ["поглощение кислорода и выделение углекислого газа в процессе дыхания", "образование органических веществ из неорганических на свету", "восприятие раздражений из окружающей среды и преобразование их в нервные импульсы", "поступление веществ в организм, их преобразование и удаление конечных продуктов жизнедеятельности"], "correct": 2, "raw_answer": "восприятие раздражений из окружающей среды и преобразование их в нервные импульсы"}, {"id": "bq2", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Какое свойство организмов обеспечивает преемственность жизни на Земле?", "type": "single", "options": ["обмен веществ", "раздражимость", "изменчивость", "размножение"], "correct": 3, "raw_answer": "размножение"}, {"id": "bq3", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Укажите признак, характерный только для царства животных.", "type": "single", "options": ["дышат, питаются, размножаются", "имеют нервную ткань", "обладают раздражимостью", "состоят из разнообразных тканей"], "correct": 1, "raw_answer": "имеют нервную ткань"}, {"id": "bq4", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Русский биолог Д.И. Ивановский, изучая заболевание листьев табака, открыл", "type": "single", "options": ["грибы", "бактерии", "вирусы", "простейших"], "correct": 2, "raw_answer": "вирусы"}, {"id": "bq5", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Развитие организма животного от момента образования зиготы до рождения изучает наука", "type": "single", "options": ["физиология", "эмбриология", "морфология", "генетика"], "correct": 1, "raw_answer": "эмбриология"}, {"id": "bq6", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Строение и распространение древних папоротниковидных изучает наука", "type": "single", "options": ["экология растений", "селекция", "палеонтология", "физиология растений"], "correct": 2, "raw_answer": "палеонтология"}, {"id": "bq7", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Какая наука изучает многообразие организмов и объединяет их в группы на основе родства?", "type": "single", "options": ["морфология", "физиология", "экология", "систематика"], "correct": 3, "raw_answer": "систематика"}, {"id": "bq8", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Для изучения строения молекул полисахаридов и их роли в клетке используют метод", "type": "single", "options": ["световой микроскопии", "биохимический", "цитогенетический", "электронной микроскопии"], "correct": 1, "raw_answer": "биохимический"}, {"id": "bq9", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Способность организма отвечать на воздействия окружающей среды называют", "type": "single", "options": ["воспроизведением", "эволюцией", "раздражимостью", "нормой реакции"], "correct": 2, "raw_answer": "раздражимостью"}, {"id": "bq10", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Генеалогический метод использует наука", "type": "single", "options": ["морфология", "эмбриология", "биохимия", "генетика"], "correct": 3, "raw_answer": "генетика"}, {"id": "bq11", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Изучение сортового и видового разнообразия растений - задача науки", "type": "single", "options": ["палеонтологии", "селекции", "экологии", "биогеографии"], "correct": 1, "raw_answer": "селекции"}, {"id": "bq12", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Какой уровень организации живого служит основным объектом изучения цитологии?", "type": "single", "options": ["биосферный", "популяционно-видовой", "биогеоценотический", "клеточный"], "correct": 3, "raw_answer": "клеточный"}, {"id": "bq13", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Обмен веществ характерен для", "type": "single", "options": ["тел неживой природы", "бактериофагов", "бактерий", "вирусов гриппа"], "correct": 2, "raw_answer": "бактерий"}, {"id": "bq14", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "На каком уровне организации происходит реализация наследственной информации?", "type": "single", "options": ["популяционном", "биосферном", "организменном", "экосистемном"], "correct": 2, "raw_answer": "организменном"}, {"id": "bq15", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Наука, классифицирующая организмы на основе их родства,", "type": "single", "options": ["экология", "палеонтология", "морфология", "систематика"], "correct": 3, "raw_answer": "систематика"}, {"id": "bq16", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Высшим уровнем организации жизни является", "type": "single", "options": ["биосфера", "популяция", "экосистема", "организм"], "correct": 0, "raw_answer": "биосфера"}, {"id": "bq17", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Генные мутации происходят на уровне организации живого", "type": "single", "options": ["молекулярном", "организменном", "видовом", "популяционном"], "correct": 0, "raw_answer": "молекулярном"}, {"id": "bq18", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Получением высокоурожайных полиплоидных растений занимается наука", "type": "single", "options": ["ботаника", "селекция", "генетика", "физиология"], "correct": 1, "raw_answer": "селекция"}, {"id": "bq19", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выведением новых высокопродуктивных штаммов микроорганизмов занимается наука", "type": "single", "options": ["цитология", "селекция", "биохимия", "генетика"], "correct": 1, "raw_answer": "селекция"}, {"id": "bq20", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Использование цитогенетического метода позволяет обнаружить у человека нарушение", "type": "single", "options": ["развития органов у зародыша", "структуры цитоплазмы клетки", "обмена веществ в клетке", "строения и числа хромосом"], "correct": 3, "raw_answer": "строения и числа хромосом"}, {"id": "bq21", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Методы выведения новых пород животных разрабатывает наука", "type": "single", "options": ["селекция", "микробиология", "генетика", "физиология животных"], "correct": 0, "raw_answer": "селекция"}, {"id": "bq22", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Генетика имеет большое значение для медицины, так как она", "type": "single", "options": ["создает лекарства для лечения больных", "устанавливает причины наследственных заболеваний", "защищает окружающую среду от загрязнения мутагенами", "ведет борьбу с эпидемиями"], "correct": 1, "raw_answer": "устанавливает причины наследственных заболеваний"}, {"id": "bq23", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Главный признак живого -", "type": "single", "options": ["движение", "преобразование веществ", "увеличение массы", "обмен веществ"], "correct": 3, "raw_answer": "обмен веществ"}, {"id": "bq24", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Изучать структуру органоидов клетки позволяет метод", "type": "single", "options": ["центрифугирования", "электронного микроскопирования", "культуры тканей", "светового микроскопирования"], "correct": 1, "raw_answer": "электронного микроскопирования"}, {"id": "bq25", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Процессы экологического и географического видообразования исследует наука", "type": "single", "options": ["селекция", "эволюция", "генетика", "систематика"], "correct": 1, "raw_answer": "эволюция"}, {"id": "bq26", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Изучением влияния загрязнений на окружающую среду занимается наука", "type": "single", "options": ["селекция", "физиология", "биогеография", "экология"], "correct": 3, "raw_answer": "экология"}, {"id": "bq27", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "В цитологии используют метод", "type": "single", "options": ["электронной микроскопии", "близнецовый", "гибридологического анализа", "искусственного отбора"], "correct": 0, "raw_answer": "электронной микроскопии"}, {"id": "bq28", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Клевер красный, занимающий определенный ареал, представляет собой уровень организации живой природы", "type": "single", "options": ["популяционно-видовой", "биосферный", "биоценотический", "организменный"], "correct": 0, "raw_answer": "популяционно-видовой"}, {"id": "bq29", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Эмбриология - наука, которая изучает", "type": "single", "options": ["причины мутаций", "законы наследственности", "ископаемые остатки организмов", "зародышевое развитие организмов"], "correct": 3, "raw_answer": "зародышевое развитие организмов"}, {"id": "bq30", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Какая наука изучает строение и функции клеток организмов разных царств живой природы?", "type": "single", "options": ["селекция", "цитология", "генетика", "экология"], "correct": 1, "raw_answer": "цитология"}, {"id": "bq31", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Основная задача систематики - изучение", "type": "single", "options": ["этапов исторического развития организмов", "приспособленности организмов к условиям обитания", "отношений организмов и окружающей среды", "организмов и объединение их в группы на основе родства"], "correct": 3, "raw_answer": "организмов и объединение их в группы на основе родства"}, {"id": "bq32", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "На каком уровне организации живого осуществляется в природе круговорот веществ?", "type": "single", "options": ["биосферном", "организменном", "клеточном", "популяционно-видовом"], "correct": 0, "raw_answer": "биосферном"}, {"id": "bq33", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Увеличение массы и размеров тела в онтогенезе человека -", "type": "single", "options": ["размножение", "эволюция", "рост", "развитие"], "correct": 2, "raw_answer": "рост"}, {"id": "bq34", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Для живых объектов природы, в отличие от неживых тел, характерно", "type": "single", "options": ["уменьшение веса", "растворение веществ в воде", "дыхание", "перемещение в пространстве"], "correct": 2, "raw_answer": "дыхание"}, {"id": "bq35", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Для выявления изменений, происходящих в живой клетке в процессе митоза, используется метод", "type": "single", "options": ["пересадки генов", "конструирования генов", "микроскопии", "центрифугирования"], "correct": 2, "raw_answer": "микроскопии"}, {"id": "bq36", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Для выявления изменений, происходящих в живой клетке в процессе митоза, используется метод", "type": "single", "options": ["пересадки генов", "центрифугирования", "меченых атомов", "конструирования генов"], "correct": 2, "raw_answer": "меченых атомов"}, {"id": "bq37", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Ископаемые остатки организмов изучает наука", "type": "single", "options": ["палеонтология", "эмбриология", "сравнительная анатомия", "биогеография"], "correct": 0, "raw_answer": "палеонтология"}, {"id": "bq38", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Наука о многообразии организмов и распределении их по родственным группам -", "type": "single", "options": ["цитология", "эмбриология", "биогеография", "систематика"], "correct": 3, "raw_answer": "систематика"}, {"id": "bq39", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "В какой микроскоп можно увидеть внутреннее строение хлоропластов?", "type": "single", "options": ["электронный", "бинокулярный", "световой", "школьный"], "correct": 0, "raw_answer": "электронный"}, {"id": "bq40", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Один из признаков отличия живого от неживого - это способность к", "type": "single", "options": ["самовоспроизведению", "разрушению", "росту", "изменению размеров"], "correct": 0, "raw_answer": "самовоспроизведению"}, {"id": "bq73", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Метод кольцевания используют для", "type": "multi", "options": ["определения сроков и путей миграции птиц", "определения продолжительности жизни птиц", "оценки ущерба, наносимого человеку птицами", "изучения механизмов полета птиц на разной высоте", "определения особенностей поведения домашних птиц"], "correct": [0, 1], "raw_answer": "определения сроков и путей миграции птиц, определения продолжительности жизни птиц"}, {"id": "bq74", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Энергетический обмен у обыкновенной амёбы происходит на уровне организации живого", "type": "multi", "options": ["биогеоценотическом", "биосферном", "клеточном", "популяционно-видовом", "организменном"], "correct": [2, 4], "raw_answer": "клеточном, организменном"}, {"id": "bq75", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Для определения количества эритроцитов в крови человека используют методы", "type": "multi", "options": ["эксперимента", "микроскопирования", "гибридизации", "клонирования", "измерения"], "correct": [1, 4], "raw_answer": "микроскопирования, измерения"}, {"id": "bq76", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Для определения количества лимфоцитов в крови человека используют методы", "type": "multi", "options": ["измерения", "клонирования", "гибридизации", "эксперимента", "микроскопирования"], "correct": [0, 4], "raw_answer": "измерения, микроскопирования"}, {"id": "bq77", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Клеточный уровень организации жизни совпадает с организменным у", "type": "multi", "options": ["инфузории туфельки", "вируса СПИДа", "эвглены зеленой", "человека", "бактериофага"], "correct": [0, 2], "raw_answer": "инфузории туфельки, эвглены зеленой"}, {"id": "bq78", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Клеточный уровень организации жизни совпадает с организменным у", "type": "multi", "options": ["амебы обыкновенной", "инфузории туфельки", "вируса табачной мозаики", "бактериофага", "вируса СПИДа"], "correct": [0, 1], "raw_answer": "амебы обыкновенной, инфузории туфельки"}, {"id": "bq79", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Генеалогический метод используют для определения", "type": "multi", "options": ["структуры хромосом и кариотипа", "степени влияния факторов среды на формирование признака", "частоты встречаемости патологичного гена в популяции", "характера наследования признака", "вероятности передачи признака в поколениях"], "correct": [3, 4], "raw_answer": "характера наследования признака, вероятности передачи признака в поколениях"}, {"id": "bq80", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. С помощью световой микроскопии в растительной клетке можно различить", "type": "multi", "options": ["рибосомы", "вакуоль", "клеточную стенку", "эндоплазматическую сеть", "микротрубочки"], "correct": [1, 2], "raw_answer": "вакуоль, клеточную стенку"}, {"id": "bq81", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Методы биотехнологии позволяют", "type": "multi", "options": ["изменить наследственность микроорганизмов путём клеточной инженерии", "изучить превращение веществ в процессе жизнедеятельности организмов", "получить растения с генетически изменёнными признаками", "изучить микроскопические структуры клеток", "обнаружить изменения, возникшие в организме в результате онтогенеза"], "correct": [0, 2], "raw_answer": "изменить наследственность микроорганизмов путём клеточной инженерии, получить растения с генетически изменёнными признаками"}, {"id": "bq83", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. К особенностям гибридологического метода относят", "type": "multi", "options": ["наличие хромосомных перестроек", "определение числа хромосом в соматических клетках", "определение мутантных генов", "количественный учёт наследования каждого признака", "подбор родительских пар с альтернативными признаками"], "correct": [3, 4], "raw_answer": "количественный учёт наследования каждого признака, подбор родительских пар с альтернативными признаками"}, {"id": "bq84", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. К физиологическим методам относят", "type": "multi", "options": ["эксперимент", "хроматографию", "получение гибридов", "электронную микроскопию", "наблюдение"], "correct": [0, 4], "raw_answer": "эксперимент, наблюдение"}, {"id": "bq85", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. У каких организмов совпадают клеточный и организменный уровни жизни?", "type": "multi", "options": ["хламидомонада", "пшеница", "пеницилл", "гидра", "серобактерия"], "correct": [0, 4], "raw_answer": "хламидомонада, серобактерия"}, {"id": "bq86", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Микробиологическое производство как область биотехнологии занимается", "type": "multi", "options": ["созданием генетически модифицированных растений", "изучением клеток бактерий", "синтезом кормового белка", "получением антибиотиков и витаминов", "систематикой вирусов"], "correct": [2, 3], "raw_answer": "синтезом кормового белка, получением антибиотиков и витаминов"}, {"id": "bq87", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. К эмпирическим методам изучения живой природы относят", "type": "multi", "options": ["моделирование", "абстрагирование", "сравнение", "эксперимент", "наблюдение"], "correct": [3, 4], "raw_answer": "эксперимент, наблюдение"}, {"id": "bq88", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Гибридологический метод исследования используют", "type": "multi", "options": ["селекционеры", "экологи", "биохимики", "эмбриологи", "генетики"], "correct": [0, 4], "raw_answer": "селекционеры, генетики"}, {"id": "bq89", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Какие методы используют для изучения строения и функций клетки?", "type": "multi", "options": ["генная инженерия", "центрифугирование", "гибридизация", "микроскопирование", "цитогенетический анализ"], "correct": [1, 3], "raw_answer": "центрифугирование, микроскопирование"}, {"id": "bq90", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Изучение биологических объектов, процессов в различных специально созданных условиях осуществляют с помощью методов:", "type": "multi", "options": ["моделирования", "обобщения", "эксперимента", "абстрагирования", "клонирования"], "correct": [0, 2], "raw_answer": "моделирования, эксперимента"}, {"id": "bq91", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Процессы деления клеток изучают с помощью методов", "type": "multi", "options": ["микрохирургии", "культуры клеток", "дифференциального центрифугирования", "фото- и киносъемки", "микроскопии"], "correct": [3, 4], "raw_answer": "фото- и киносъемки, микроскопии"}, {"id": "bq92", "section": 1, "section_title": "Раздел 1 «Биология как наука. Методы научного познания»", "question": "Выберите два верных ответа из пяти. Генная инженерия, в отличие от клеточной, включает исследования, связанные с", "type": "multi", "options": ["получением рекомбинантных (модифицированных) молекул РНК и ДНК", "пересадкой генов", "гибридизацией соматических клеток", "культивированием клеток высших организмов", "пересадкой ядра из одной клетки в другую"], "correct": [0, 1], "raw_answer": "получением рекомбинантных (модифицированных) молекул РНК и ДНК, пересадкой генов"}]</script>
+<script id="sections-data" type="application/json">[{"num": 1, "title": "Раздел 1 «Биология как наука. Методы научного познания»", "count": 59}]</script>
 <script>
+const ALL_QUESTIONS = JSON.parse(document.getElementById('quiz-data').textContent);
+const SECTIONS = JSON.parse(document.getElementById('sections-data').textContent);
+
+// ---- Telegram Mini App integration ----
 const tg = window.Telegram && window.Telegram.WebApp;
+
+function applyTelegramTheme(){
+  if(!tg) return;
+  const tp = tg.themeParams || {};
+  const root = document.documentElement.style;
+  if(tp.bg_color) root.setProperty('--bg', tp.bg_color);
+  if(tp.secondary_bg_color) root.setProperty('--card', tp.secondary_bg_color);
+  if(tp.text_color) root.setProperty('--text', tp.text_color);
+  if(tp.hint_color) root.setProperty('--muted', tp.hint_color);
+  if(tp.button_color){
+    root.setProperty('--accent', tp.button_color);
+    root.setProperty('--accent-dark', tp.button_color);
+  }
+  document.body.style.backgroundColor = tp.bg_color || '';
+}
+
+function syncBackButton(){
+  if(!tg || !tg.BackButton) return;
+  if(setupEl.classList.contains('hidden')) tg.BackButton.show();
+  else tg.BackButton.hide();
+}
+
 if(tg){
   tg.ready();
   tg.expand();
-  const applyTheme = () => {
-    const tp = tg.themeParams || {};
-    const root = document.documentElement.style;
-    if(tp.bg_color) root.setProperty('--bg', tp.bg_color);
-    if(tp.secondary_bg_color) root.setProperty('--card', tp.secondary_bg_color);
-    if(tp.text_color) root.setProperty('--text', tp.text_color);
-    if(tp.hint_color) root.setProperty('--muted', tp.hint_color);
-    if(tp.button_color){
-      root.setProperty('--accent', tp.button_color);
-      root.setProperty('--accent-dark', tp.button_color);
-    }
-    document.body.style.backgroundColor = tp.bg_color || '';
-  };
-  applyTheme();
-  tg.onEvent('themeChanged', applyTheme);
+  applyTelegramTheme();
+  tg.onEvent('themeChanged', applyTelegramTheme);
   try{ tg.setHeaderColor('bg_color'); }catch(e){}
   try{ tg.setBackgroundColor('bg_color'); }catch(e){}
-  if(tg.BackButton) tg.BackButton.hide();
-  document.querySelectorAll('.subject').forEach(el => {
-    el.addEventListener('click', () => tg.HapticFeedback.selectionChanged());
-  });
+  try{ tg.disableVerticalSwipes(); }catch(e){}
+  if(tg.BackButton){
+    tg.BackButton.onClick(() => {
+      if(!resultsEl.classList.contains('hidden')){
+        backToSetup();
+      } else if(!quizEl.classList.contains('hidden')){
+        if(score.total === 0) backToSetup(); else showResults();
+      }
+    });
+  }
 }
+
+let sessionQuestions = [];
+let currentIndex = 0;
+let score = {correct: 0, total: 0};
+let secStats = {}; // {num: {correct,total}}
+let reviewLog = []; // wrong-answer entries
+let answered = false;
+let selectedIdx = null;     // single mode
+let selectedSet = new Set(); // multi mode
+
+const setupEl = document.getElementById('setup');
+const quizEl = document.getElementById('quiz');
+const resultsEl = document.getElementById('results');
+const sectionListEl = document.getElementById('sectionList');
+const selCountEl = document.getElementById('selCount');
+
+function buildSetup(){
+  sectionListEl.innerHTML = '';
+  SECTIONS.forEach(s => {
+    const row = document.createElement('label');
+    row.className = 'section-row';
+    row.innerHTML = `
+      <input type="checkbox" data-sec="${s.num}" checked>
+      <span class="stitle">${s.title}</span>
+      <span class="scount">${s.count}</span>
+    `;
+    sectionListEl.appendChild(row);
+  });
+  sectionListEl.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', updateSelCount);
+  });
+  updateSelCount();
+}
+
+function getSelectedSections(){
+  return new Set(
+    Array.from(sectionListEl.querySelectorAll('input[type=checkbox]:checked'))
+      .map(cb => parseInt(cb.dataset.sec, 10))
+  );
+}
+
+function updateSelCount(){
+  const sel = getSelectedSections();
+  const count = ALL_QUESTIONS.filter(q => sel.has(q.section)).length;
+  selCountEl.textContent = count;
+  document.getElementById('startBtn').disabled = count === 0;
+}
+
+document.getElementById('selectAllBtn').addEventListener('click', () => {
+  sectionListEl.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+  updateSelCount();
+});
+document.getElementById('selectNoneBtn').addEventListener('click', () => {
+  sectionListEl.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+  updateSelCount();
+});
+
+function shuffleArr(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  const sel = getSelectedSections();
+  let qs = ALL_QUESTIONS.filter(q => sel.has(q.section));
+  if(document.getElementById('shuffleToggle').checked){
+    qs = shuffleArr(qs);
+  }
+  sessionQuestions = qs;
+  currentIndex = 0;
+  score = {correct:0, total:0};
+  secStats = {};
+  reviewLog = [];
+  setupEl.classList.add('hidden');
+  resultsEl.classList.add('hidden');
+  quizEl.classList.remove('hidden');
+  renderQuestion();
+  syncBackButton();
+});
+
+function sectionTitle(num){
+  const s = SECTIONS.find(x => x.num === num);
+  return s ? s.title : '';
+}
+
+function renderQuestion(){
+  answered = false;
+  selectedIdx = null;
+  selectedSet = new Set();
+  const q = sessionQuestions[currentIndex];
+  document.getElementById('sectionTag').textContent = sectionTitle(q.section);
+  document.getElementById('qtext').textContent = q.question;
+  document.getElementById('progressText').textContent = `${currentIndex+1} / ${sessionQuestions.length}`;
+  document.getElementById('progressInner').style.width = `${(currentIndex/sessionQuestions.length)*100}%`;
+  updateScoreBadge();
+
+  const optsEl = document.getElementById('options');
+  optsEl.innerHTML = '';
+  const isMulti = q.type === 'multi';
+  document.getElementById('multiHint').classList.toggle('hidden', !isMulti);
+  document.getElementById('checkBtn').classList.toggle('hidden', false);
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('feedback').classList.remove('show');
+  document.getElementById('checkBtn').disabled = isMulti; // enabled once a choice made
+
+  q.options.forEach((optText, idx) => {
+    const div = document.createElement('div');
+    div.className = 'opt' + (isMulti ? ' multi' : '');
+    div.dataset.idx = idx;
+    const markChar = isMulti ? '' : '';
+    div.innerHTML = `<span class="mark">${markChar}</span><span class="label">${optText}</span>`;
+    div.addEventListener('click', () => onOptionClick(idx, isMulti));
+    optsEl.appendChild(div);
+  });
+
+  if(!isMulti){
+    document.getElementById('checkBtn').classList.add('hidden');
+  }
+}
+
+function onOptionClick(idx, isMulti){
+  if(answered) return;
+  if(tg) tg.HapticFeedback.selectionChanged();
+  if(isMulti){
+    const div = document.querySelector(`#options .opt[data-idx="${idx}"]`);
+    if(selectedSet.has(idx)){
+      selectedSet.delete(idx);
+      div.classList.remove('selected');
+    } else {
+      selectedSet.add(idx);
+      div.classList.add('selected');
+    }
+    document.getElementById('checkBtn').disabled = selectedSet.size === 0;
+  } else {
+    selectedIdx = idx;
+    checkAnswer();
+  }
+}
+
+document.getElementById('checkBtn').addEventListener('click', () => {
+  if(!answered) checkAnswer();
+});
+
+function checkAnswer(){
+  const q = sessionQuestions[currentIndex];
+  answered = true;
+  const optDivs = Array.from(document.querySelectorAll('#options .opt'));
+  optDivs.forEach(d => d.classList.add('locked'));
+
+  let isCorrect;
+  if(q.type === 'multi'){
+    const correctSet = new Set(q.correct);
+    isCorrect = correctSet.size === selectedSet.size && [...correctSet].every(i => selectedSet.has(i));
+    optDivs.forEach((d, idx) => {
+      const isCorrectOpt = correctSet.has(idx);
+      const isSelected = selectedSet.has(idx);
+      if(isCorrectOpt && isSelected) d.classList.add('correct');
+      else if(!isCorrectOpt && isSelected) d.classList.add('wrong');
+      else if(isCorrectOpt && !isSelected) d.classList.add('missed');
+      d.querySelector('.mark').textContent = isSelected ? (isCorrectOpt ? '✓' : '✕') : (isCorrectOpt ? '✓' : '');
+    });
+  } else {
+    isCorrect = selectedIdx === q.correct;
+    optDivs.forEach((d, idx) => {
+      if(idx === q.correct) d.classList.add('correct');
+      else if(idx === selectedIdx) d.classList.add('wrong');
+      d.querySelector('.mark').textContent = idx === q.correct ? '✓' : (idx === selectedIdx ? '✕' : '');
+    });
+  }
+
+  if(tg) tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error');
+  score.total++;
+  if(isCorrect) score.correct++;
+  const sn = q.section;
+  if(!secStats[sn]) secStats[sn] = {correct:0, total:0};
+  secStats[sn].total++;
+  if(isCorrect) secStats[sn].correct++;
+
+  if(!isCorrect){
+    const yourText = q.type === 'multi'
+      ? Array.from(selectedSet).map(i => q.options[i]).join(', ')
+      : (selectedIdx !== null ? q.options[selectedIdx] : '(нет ответа)');
+    const correctText = q.type === 'multi'
+      ? q.correct.map(i => q.options[i]).join(', ')
+      : q.options[q.correct];
+    reviewLog.push({question: q.question, section: q.section, your: yourText, correct: correctText});
+  }
+
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show');
+  if(isCorrect){
+    fb.className = 'feedback show ok';
+    fb.textContent = '✓ Верно!';
+  } else {
+    fb.className = 'feedback show no';
+    const correctText = q.type === 'multi'
+      ? q.correct.map(i => q.options[i]).join(', ')
+      : q.options[q.correct];
+    fb.textContent = `✕ Неверно. Правильный ответ: ${correctText}`;
+  }
+
+  updateScoreBadge();
+  document.getElementById('checkBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+}
+
+function updateScoreBadge(){
+  document.getElementById('scoreBadge').textContent = `${score.correct} / ${score.total}`;
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if(currentIndex + 1 < sessionQuestions.length){
+    currentIndex++;
+    renderQuestion();
+  } else {
+    showResults();
+  }
+});
+
+document.getElementById('stopBtn').addEventListener('click', () => {
+  if(score.total === 0){
+    backToSetup();
+  } else {
+    showResults();
+  }
+});
+
+function backToSetup(){
+  quizEl.classList.add('hidden');
+  resultsEl.classList.add('hidden');
+  setupEl.classList.remove('hidden');
+  syncBackButton();
+}
+
+function showResults(){
+  quizEl.classList.add('hidden');
+  resultsEl.classList.remove('hidden');
+  syncBackButton();
+  if(tg) tg.HapticFeedback.notificationOccurred('success');
+  document.getElementById('progressInner').style.width = '100%';
+
+  document.getElementById('resultBig').textContent = `${score.correct} / ${score.total}`;
+  const pct = score.total ? Math.round((score.correct/score.total)*100) : 0;
+  document.getElementById('resultPct').textContent = `${pct}% правильных`;
+
+  const brEl = document.getElementById('secBreakdown');
+  brEl.innerHTML = '';
+  Object.keys(secStats).map(Number).sort((a,b)=>a-b).forEach(num => {
+    const st = secStats[num];
+    const p = Math.round((st.correct/st.total)*100);
+    const title = sectionTitle(num);
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <div class="name">${title}</div>
+      <div class="bar"><div class="bar-inner" style="width:${p}%"></div></div>
+      <div class="val">${st.correct}/${st.total}</div>
+    `;
+    brEl.appendChild(row);
+  });
+
+  const reviewCard = document.getElementById('reviewCard');
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = '';
+  if(reviewLog.length === 0){
+    reviewCard.classList.add('hidden');
+  } else {
+    reviewCard.classList.remove('hidden');
+    reviewLog.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'review-item';
+      div.innerHTML = `
+        <div class="q">${r.question}</div>
+        <div class="a your">Ваш ответ: ${r.your}</div>
+        <div class="a correct">Правильный ответ: ${r.correct}</div>
+      `;
+      reviewList.appendChild(div);
+    });
+  }
+}
+
+document.getElementById('restartBtn').addEventListener('click', () => {
+  resultsEl.classList.add('hidden');
+  backToSetup();
+});
+
+buildSetup();
 </script>
 </body>
 </html>
