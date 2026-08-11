@@ -425,7 +425,7 @@ function renderQuestion(){
     digitsInputEl.value = '';
     digitsInputEl.disabled = false;
     digitsInputEl.style.borderColor = '';
-    digitsInputEl.placeholder = q.correct.length === 1 ? 'впишите номер, например: 3' : 'впишите номера через запятую, например: 1,3,5';
+    digitsInputEl.placeholder = q.correct.length === 1 ? 'впишите номер, например: 3' : 'впишите цифры подряд, например: 135';
     setTimeout(() => digitsInputEl.focus(), 50);
     return;
   }
@@ -489,7 +489,9 @@ textAnswerEl.addEventListener('keydown', e => {
 const digitsInputEl2 = document.getElementById('digitsInput');
 digitsInputEl2.addEventListener('input', () => {
   if(answered) return;
-  document.getElementById('checkBtn').disabled = digitsInputEl2.value.trim().length === 0;
+  const cleaned = digitsInputEl2.value.replace(/\D/g, '');
+  if(cleaned !== digitsInputEl2.value) digitsInputEl2.value = cleaned;
+  document.getElementById('checkBtn').disabled = cleaned.length === 0;
 });
 digitsInputEl2.addEventListener('keydown', e => {
   if(e.key === 'Enter' && !answered && digitsInputEl2.value.trim().length > 0){
