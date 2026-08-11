@@ -366,7 +366,14 @@ function renderQuestion(){
   document.getElementById('feedback').classList.remove('show');
   document.getElementById('checkBtn').disabled = isMulti; // enabled once a choice made
 
-  q.options.forEach((optText, idx) => {
+  // reshuffle option order fresh on every render so the correct answer's position is never predictable
+  const order = shuffleArr(q.options.map((_, i) => i));
+  q._opts = order.map(i => q.options[i]);
+  q._correct = isMulti
+    ? order.map((origIdx, newIdx) => q.correct.includes(origIdx) ? newIdx : -1).filter(i => i !== -1)
+    : order.indexOf(q.correct);
+
+  q._opts.forEach((optText, idx) => {
     const div = document.createElement('div');
     div.className = 'opt' + (isMulti ? ' multi' : '');
     div.dataset.idx = idx;
@@ -412,7 +419,7 @@ function checkAnswer(){
 
   let isCorrect;
   if(q.type === 'multi'){
-    const correctSet = new Set(q.correct);
+    const correctSet = new Set(q._correct);
     isCorrect = correctSet.size === selectedSet.size && [...correctSet].every(i => selectedSet.has(i));
     optDivs.forEach((d, idx) => {
       const isCorrectOpt = correctSet.has(idx);
@@ -423,11 +430,11 @@ function checkAnswer(){
       d.querySelector('.mark').textContent = isSelected ? (isCorrectOpt ? '✓' : '✕') : (isCorrectOpt ? '✓' : '');
     });
   } else {
-    isCorrect = selectedIdx === q.correct;
+    isCorrect = selectedIdx === q._correct;
     optDivs.forEach((d, idx) => {
-      if(idx === q.correct) d.classList.add('correct');
+      if(idx === q._correct) d.classList.add('correct');
       else if(idx === selectedIdx) d.classList.add('wrong');
-      d.querySelector('.mark').textContent = idx === q.correct ? '✓' : (idx === selectedIdx ? '✕' : '');
+      d.querySelector('.mark').textContent = idx === q._correct ? '✓' : (idx === selectedIdx ? '✕' : '');
     });
   }
 
@@ -441,11 +448,11 @@ function checkAnswer(){
 
   if(!isCorrect){
     const yourText = q.type === 'multi'
-      ? Array.from(selectedSet).map(i => q.options[i]).join(', ')
-      : (selectedIdx !== null ? q.options[selectedIdx] : '(нет ответа)');
+      ? Array.from(selectedSet).map(i => q._opts[i]).join(', ')
+      : (selectedIdx !== null ? q._opts[selectedIdx] : '(нет ответа)');
     const correctText = q.type === 'multi'
-      ? q.correct.map(i => q.options[i]).join(', ')
-      : q.options[q.correct];
+      ? q._correct.map(i => q._opts[i]).join(', ')
+      : q._opts[q._correct];
     reviewLog.push({question: q.question, section: q.section, your: yourText, correct: correctText});
   }
 
@@ -457,8 +464,8 @@ function checkAnswer(){
   } else {
     fb.className = 'feedback show no';
     const correctText = q.type === 'multi'
-      ? q.correct.map(i => q.options[i]).join(', ')
-      : q.options[q.correct];
+      ? q._correct.map(i => q._opts[i]).join(', ')
+      : q._opts[q._correct];
     fb.textContent = `✕ Неверно. Правильный ответ: ${correctText}`;
   }
 
